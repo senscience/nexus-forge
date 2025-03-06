@@ -25,13 +25,6 @@ jobs:
           java-version: '21'
           cache: 'sbt'
           check-latest: true
-      - name: Setup SBT
-        uses: sbt/setup-sbt@v1
-      - name: Clean, build Delta image
-        run: |
-          sbt -Dsbt.color=always -Dsbt.supershell=false \
-            clean \
-            app/Docker/publishLocal
       - name: Start services
         run: docker compose --env-file tests/delta/.env.list.github -f tests/delta/docker-compose.yml up -d
       - name: Waiting for Delta to start
