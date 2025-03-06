@@ -1,0 +1,54 @@
+name: Delta Integration Tests - List partitioning
+on:
+  pull_request:
+    paths:
+        - 'kgforge/**'
+        - '.github/workflows/ci-integration-test.yml'
+  push:
+    branches:
+      - master
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'sbt'
+          check-latest: true
+      - name: Setup SBT
+        uses: sbt/setup-sbt@v1
+      - name: Clean, build Delta image
+        run: |
+          sbt -Dsbt.color=always -Dsbt.supershell=false \
+            clean \
+            app/Docker/publishLocal
+      - name: Start services
+        run: docker compose --env-file tests/delta/.env.list.github -f tests/delta/docker-compose.yml up -d
+      - name: Waiting for Delta to start
+        run: |
+          URL="http://localhost:8080/v1/version"
+          curl --connect-timeout 3 --max-time 5 --retry 30 --retry-all-errors --retry-delay 3 --retry-max-time 90 $URL
+      - name: Install Python 3
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Install dependencies
+        run: pip install .[dev]
+      - name: Test
+        run: 
+          python tests/delta/create_random.py
+      - name: Stop & clean Docker
+        if: ${{ always() }}
+        run: |
+          docker compose -f tests/delta/docker-compose.yml down --rmi "local" --volumes
+          docker system prune --force --volumes
