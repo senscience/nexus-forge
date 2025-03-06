@@ -155,7 +155,7 @@ def prepare_fetch(
         **kwargs
 ) -> prepare_return:
 
-    resource_org, resource_prj = resource._project.split("/")[-2:]
+    resource_org, resource_prj = resource._project.split("/")
     endpoint = Service.make_endpoint(service.endpoint, "resources", resource_org, resource_prj)
     url = Service.add_schema_and_id_to_endpoint(
         endpoint=endpoint, schema_id=None, resource_id=resource.id
