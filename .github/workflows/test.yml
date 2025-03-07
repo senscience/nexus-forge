@@ -2,6 +2,9 @@ name: Test Forge
 
 on:
     pull_request:
+      paths:
+      - 'kgforge/**'
+      - '.github/workflows/test.yml'
     push:
       branches:
         - master
