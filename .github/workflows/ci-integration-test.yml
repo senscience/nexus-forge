@@ -19,7 +19,13 @@ jobs:
         with:
           fetch-depth: 0
       - name: Start services
-        run: docker compose --env-file tests/delta/.env.list.github -f tests/delta/docker-compose.yml up -d
+        run: |
+          docker compose --env-file tests/delta/.env.list.github -f tests/delta/docker-compose.yml up -d
+          sleep 5  # Give some time to start
+          echo "Checking running containers..."
+          docker ps -a
+          echo "Checking logs..."
+          docker compose -f tests/delta/docker-compose.yml logs
       - name: Waiting for Delta to start
         run: |
           URL="http://localhost:8080/v1/version"
