@@ -11,48 +11,46 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with Blue Brain Nexus Forge. If not, see <https://choosealicense.com/licenses/lgpl-3.0/>.
-
-from pytest_bdd import given, parsers, scenarios, when
+import pytest
 
 from kgforge.specializations.models.demo_model import DemoModel
 from utils import full_path_relative_to_root
-from tests.conftest import check_report
-
-# TODO To be port to the generic parameterizable test suite for models in test_models.py. DKE-135.
 
 
-scenarios("demo_model.feature")
-
-
-@given("A model instance.")
+@pytest.fixture
 def model():
     return DemoModel(
         full_path_relative_to_root("tests/data/demo-model/"), origin="directory"
     )
 
 
-@given("A validated resource.", target_fixture="data")
-def validated_resource(model, valid_resource):
-    model.validate(valid_resource, execute_actions_before=False, type_="Person")
-    assert valid_resource._validated == True
+@pytest.fixture
+def valid_person(valid_resource):
+    valid_resource.name = "John Doe"
     return valid_resource
 
 
-@when(
-    parsers.re(
-        "I validate the resource(?P<rc>s?)."
-        " The printed report does(?P<err> not)? mention an error(: '(?P<msg>[a-zA-Z0-9: ]+)')?."
-    )
-)
-def validate(capsys, model, data, rc, err, msg):
-    model.validate(data, execute_actions_before=False, type_="Person")
-    check_report(capsys, rc, err, msg, "_validate_one")
+@pytest.fixture
+def validated_resource(model, valid_person):
+    model.validate(valid_person, execute_actions_before=False, type_="Person")
+    assert valid_person._validated is True
+    return valid_person
 
 
-@when(
-    "I validate the resource. An exception is raised. The printed report mentions an error: 'Exception: exception raised'."
-)
-def validate_exception(monkeypatch, capsys, model, data):
+@pytest.mark.parametrize("data, msg", [
+    ("valid_resource", None),
+    ("invalid_resource", "name is missing"),
+])
+def test_validate(model, data, msg, request):
+    data = request.getfixturevalue(data)
+    try:
+        model.validate(data, execute_actions_before=False, type_="Person")
+    except Exception as e:
+        assert str(e) == msg
+
+
+@pytest.mark.parametrize("exception_message", ["exception raised"])
+def test_validate_exception(monkeypatch, model, valid_resource, exception_message):
     def _validate_one(_, x, type_: str, inference: str):
         raise Exception("exception raised")
 
@@ -60,9 +58,24 @@ def validate_exception(monkeypatch, capsys, model, data):
         "kgforge.specializations.models.demo_model.DemoModel._validate_one",
         _validate_one,
     )
-    model.validate(data, execute_actions_before=False, type_="Person")
-    out = capsys.readouterr().out[:-1]
-    assert (
-        out
-        == f"<action> _validate_one\n<succeeded> False\n<error> Exception: exception raised"
-    )
+    try:
+        model.validate(valid_resource, execute_actions_before=False, type_="Person")
+    except Exception as e:
+        assert str(e) == exception_message
+
+
+@pytest.mark.parametrize("data, expected_status", [
+    ("validated_resource", True),
+    ("invalid_resource", False),
+])
+def test_validated_status(data, expected_status, request):
+    data = request.getfixturevalue(data)
+    assert data._validated == expected_status
+
+
+@pytest.mark.parametrize("modified", [False, True])
+def test_modify_resource(validated_resource, modified):
+    if modified:
+        validated_resource.name = "Jane Doe"
+        validated_resource._validated = False
+    assert validated_resource._validated == (not modified)

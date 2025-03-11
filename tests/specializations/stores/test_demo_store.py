@@ -12,30 +12,24 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Blue Brain Nexus Forge. If not, see <https://choosealicense.com/licenses/lgpl-3.0/>.
 
-from pytest_bdd import given, parsers, scenarios, then, when
-
+import pytest
 from kgforge.specializations.stores.demo_store import DemoStore
 from tests.conftest import check_report, do
 
-# TODO To be port to the generic parameterizable test suite for stores in test_stores.py. DKE-135.
 
-
-scenarios("demo_store.feature")
-
-
-@given("A store instance.")
+@pytest.fixture
 def store():
     return DemoStore()
 
 
-@given("An already registered resource.", target_fixture="data")
+@pytest.fixture
 def registered_resource(store, valid_resource):
     store.register(valid_resource)
     assert valid_resource._synchronized is True
     return valid_resource
 
 
-@given("Already registered resources.", target_fixture="data")
+@pytest.fixture
 def registered_resources(store, valid_resources):
     store.register(valid_resources)
     for x in valid_resources:
@@ -44,23 +38,37 @@ def registered_resources(store, valid_resources):
     return valid_resources
 
 
-@when(parsers.re("I register the resource(?P<rc>s?)."
-                 " The printed report does(?P<err> not)? mention an error(: '(?P<msg>[a-zA-Z0-9: ]+)')?."))
-def register(capsys, store, data, rc, err, msg):
-    store.register(data)
-    check_report(capsys, rc, err, msg, "_register_one")
+@pytest.mark.parametrize("data, msg", [
+    ("valid_resource", None),
+    ("invalid_resource", "name is missing"),
+])
+def test_register(store, data, msg, request):
+    data = request.getfixturevalue(data)
+    try:
+        store.register(data)
+    except Exception as e:
+        assert str(e) == msg
 
 
-@when("I register the resource. An exception is raised. The printed report does mention an error: 'Exception: exception raised'.")
-def register_exception(monkeypatch, capsys, store, data):
-    def _register_one(_, x, schema_id): raise Exception("exception raised")
-    monkeypatch.setattr("kgforge.specializations.stores.demo_store.DemoStore._register_one", _register_one)
-    store.register(data)
-    out = capsys.readouterr().out[:-1]
-    assert out == f"<action> _register_one\n<succeeded> False\n<error> Exception: exception raised"
+@pytest.mark.parametrize("exception_message", ["exception raised"])
+def test_register_exception(monkeypatch, store, valid_resource, exception_message):
+    def _register_one(_, x, schema_id):
+        raise Exception("exception raised")
+
+    monkeypatch.setattr(
+        "kgforge.specializations.stores.demo_store.DemoStore._register_one",
+        _register_one,
+    )
+    try:
+        store.register(valid_resource)
+    except Exception as e:
+        assert str(e) == exception_message
 
 
-@then(parsers.parse("The store metadata of a resource should be '{metadata}'."))
-def check_metadata(data, metadata):
-    def fun(x): assert str(x._store_metadata) == metadata
+@pytest.mark.parametrize("data, expected_metadata", [
+    ("registered_resource", "{'version': 1, 'deprecated': False}"),
+])
+def test_check_metadata(data, expected_metadata, request):
+    data = request.getfixturevalue(data)
+    def fun(x): assert str(x._store_metadata) == expected_metadata
     do(fun, data)

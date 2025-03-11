@@ -76,22 +76,22 @@ def resources(valid: bool) -> List[Resource]:
     return [r1, r2]
 
 
-@given("A valid resource.", target_fixture="data")
+@pytest.fixture
 def valid_resource():
     return resource(True)
 
 
-@given("Valid resources.", target_fixture="data")
+@pytest.fixture
 def valid_resources():
     return resources(True)
 
 
-@given("An invalid resource.", target_fixture="data")
+@pytest.fixture
 def invalid_resource():
     return resource(False)
 
 
-@given("Invalid resources.", target_fixture="data")
+@pytest.fixture
 def invalid_resources():
     return resources(False)
 
@@ -99,7 +99,7 @@ def invalid_resources():
 # Resource(s) modifications.
 
 
-@when("I modify the resource.")
+@pytest.fixture
 def modify_resource(data):
     data.name = "other"
 
