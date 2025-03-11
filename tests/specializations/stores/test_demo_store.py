@@ -47,10 +47,7 @@ def registered_resources(store, valid_resources):
 @when(parsers.re("I register the resource(?P<rc>s?)."
                  " The printed report does(?P<err> not)? mention an error(: '(?P<msg>[a-zA-Z0-9: ]+)')?."))
 def register(capsys, store, data, rc, err, msg):
-    try:
-        store.register(data)
-    except Exception:
-        pass
+    store.register(data)
     check_report(capsys, rc, err, msg, "_register_one")
 
 
@@ -58,10 +55,7 @@ def register(capsys, store, data, rc, err, msg):
 def register_exception(monkeypatch, capsys, store, data):
     def _register_one(_, x, schema_id): raise Exception("exception raised")
     monkeypatch.setattr("kgforge.specializations.stores.demo_store.DemoStore._register_one", _register_one)
-    try:
-        store.register(data)
-    except Exception:
-        pass
+    store.register(data)
     out = capsys.readouterr().out[:-1]
     assert out == f"<action> _register_one\n<succeeded> False\n<error> Exception: exception raised"
 

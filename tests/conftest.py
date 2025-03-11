@@ -122,9 +122,9 @@ def check_report(capsys, rc, err, msg, op):
     out = capsys.readouterr().out[:-1]
     heads = {"": "", "s": "<count> 2\n"}
     head = heads[rc]
-    tails = {None: f"False\n<error> {msg}", " not": "True"}
+    tails = {None: f"False\n- <error> {msg}", " not": "True"}
     tail = tails[err]
-    assert out == f"{head}<action> {op}\n<succeeded> {tail}"
+    assert out == f"- {head}<action> {op}\n- <succeeded> {tail}"
 
 
 @then("I should be able to access the report of the action on a resource.")
