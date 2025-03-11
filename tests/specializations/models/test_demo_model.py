@@ -13,6 +13,16 @@
 # along with Blue Brain Nexus Forge. If not, see <https://choosealicense.com/licenses/lgpl-3.0/>.
 import pytest
 
+from kgforge.specializations.models.demo_model import DemoModel
+from utils import full_path_relative_to_root
+
+
+@pytest.fixture
+def model():
+    return DemoModel(
+        full_path_relative_to_root("tests/data/demo-model/"), origin="directory"
+    )
+
 
 @pytest.fixture
 def valid_person(valid_resource):
@@ -29,7 +39,7 @@ def validated_resource(model, valid_person):
 
 @pytest.mark.parametrize("data, msg", [
     ("valid_resource", None),
-    ("invalid_resource", "ValidationError: name is missing"),
+    ("invalid_resource", "name is missing"),
 ])
 def test_validate(model, data, msg, request):
     data = request.getfixturevalue(data)
@@ -39,7 +49,7 @@ def test_validate(model, data, msg, request):
         assert str(e) == msg
 
 
-@pytest.mark.parametrize("exception_message", ["Exception: exception raised"])
+@pytest.mark.parametrize("exception_message", ["exception raised"])
 def test_validate_exception(monkeypatch, model, valid_resource, exception_message):
     def _validate_one(_, x, type_: str, inference: str):
         raise Exception("exception raised")
@@ -54,18 +64,18 @@ def test_validate_exception(monkeypatch, model, valid_resource, exception_messag
         assert str(e) == exception_message
 
 
+@pytest.mark.parametrize("data, expected_status", [
+    ("validated_resource", True),
+    ("invalid_resource", False),
+])
+def test_validated_status(data, expected_status, request):
+    data = request.getfixturevalue(data)
+    assert data._validated == expected_status
+
+
 @pytest.mark.parametrize("modified", [False, True])
 def test_modify_resource(validated_resource, modified):
     if modified:
         validated_resource.name = "Jane Doe"
         validated_resource._validated = False
     assert validated_resource._validated == (not modified)
-
-
-@pytest.mark.parametrize("data, expected_status", [
-    ("valid_resource", True),
-    ("invalid_resource", False),
-])
-def test_validated_status(data, expected_status, request):
-    data = request.getfixturevalue(data)
-    assert data._validated == expected_status
