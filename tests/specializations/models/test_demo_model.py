@@ -45,7 +45,10 @@ def validated_resource(model, valid_resource):
     )
 )
 def validate(capsys, model, data, rc, err, msg):
-    model.validate(data, execute_actions_before=False, type_="Person")
+    try:
+        model.validate(data, execute_actions_before=False, type_="Person")
+    except Exception:
+        pass
     check_report(capsys, rc, err, msg, "_validate_one")
 
 

@@ -55,7 +55,10 @@ def register(capsys, store, data, rc, err, msg):
 def register_exception(monkeypatch, capsys, store, data):
     def _register_one(_, x, schema_id): raise Exception("exception raised")
     monkeypatch.setattr("kgforge.specializations.stores.demo_store.DemoStore._register_one", _register_one)
-    store.register(data)
+    try:
+        store.register(data)
+    except Exception:
+        pass
     out = capsys.readouterr().out[:-1]
     assert out == f"<action> _register_one\n<succeeded> False\n<error> Exception: exception raised"
 

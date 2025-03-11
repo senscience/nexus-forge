@@ -118,7 +118,7 @@ def run(
         required_synchronized: Optional[bool] = None,
         execute_actions: bool = False,
         monitored_status: Optional[str] = None,
-        catch_exceptions: bool = False,
+        catch_exceptions: bool = True,
         **kwargs
 ) -> None:
 
