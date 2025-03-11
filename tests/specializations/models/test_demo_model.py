@@ -15,10 +15,16 @@ import pytest
 
 
 @pytest.fixture
-def validated_resource(model, valid_resource):
-    model.validate(valid_resource, execute_actions_before=False, type_="Person")
-    assert valid_resource._validated is True
+def valid_person(valid_resource):
+    valid_resource.name = "John Doe"
     return valid_resource
+
+
+@pytest.fixture
+def validated_resource(model, valid_person):
+    model.validate(valid_person, execute_actions_before=False, type_="Person")
+    assert valid_person._validated is True
+    return valid_person
 
 
 @pytest.mark.parametrize("data, msg", [
@@ -51,6 +57,7 @@ def test_validate_exception(monkeypatch, model, valid_resource, exception_messag
 @pytest.mark.parametrize("modified", [False, True])
 def test_modify_resource(validated_resource, modified):
     if modified:
+        validated_resource.name = "Jane Doe"
         validated_resource._validated = False
     assert validated_resource._validated == (not modified)
 
