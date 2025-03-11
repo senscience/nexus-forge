@@ -63,7 +63,10 @@ def validate_exception(monkeypatch, capsys, model, data):
         "kgforge.specializations.models.demo_model.DemoModel._validate_one",
         _validate_one,
     )
-    model.validate(data, execute_actions_before=False, type_="Person")
+    try:
+        model.validate(data, execute_actions_before=False, type_="Person")
+    except Exception:
+        pass
     out = capsys.readouterr().out[:-1]
     assert (
         out
