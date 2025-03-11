@@ -78,35 +78,38 @@ class StoreService(RdfService):
         return self._generate_context()
 
     def _build_shapes_map(self) -> Tuple[Dict, Dict, Dict]:
-        query = build_shacl_query(
-            defining_property_uri=self.NXV.shapes,
-            deprecated_property_uri=self.NXV.deprecated,
-            context=self.context,
-        )
-        # consider taking this from the forge config
-        limit = 1000
-        offset = 0
-        count = limit
+        base_url = "endpoint/schemas/org/project"
+        response = requests.get(base_url)
+        response.raise_for_status()
+        shape_list = response.json()
+
         class_to_shape = {}
         shape_to_defining_resource = {}
         defining_resource_to_named_graph = {}
-        while count == limit:
-            resources = self.context_store.sparql(
-                query, debug=False, limit=limit, offset=offset
-            )
-            for r in resources:
+        graph = Graph()
 
-                shape_uriref = URIRef(self.context.expand(r.shape))
-                if r.has_type():
-                    class_to_shape[URIRef(self.context.expand(r.get_type()))] = (
-                        shape_uriref
-                    )
-                shape_to_defining_resource[shape_uriref] = URIRef(r.resource_id)
-                defining_resource_to_named_graph[URIRef(r.resource_id)] = URIRef(
-                    r.resource_id + "/graph"
-                )
-            count = len(resources)
-            offset += limit
+        for shape_id in shape_list:
+            shape_url = f"{base_url}/{shape_id}"
+            shape_response = requests.get(shape_url)
+            shape_response.raise_for_status()
+            graph.parse(data=shape_response.text, format="turtle")
+
+        query = """
+            PREFIX sh: <http://www.w3.org/ns/shacl#>
+            SELECT ?shape ?targetClass ?resource
+            WHERE {
+                ?shape a sh:NodeShape ;
+                       sh:targetClass ?targetClass .
+                BIND(?shape AS ?resource)
+            }
+        """
+        
+        for row in graph.query(query):
+            shape_uriref = URIRef(row.shape)
+            class_to_shape[URIRef(row.targetClass)] = shape_uriref
+            shape_to_defining_resource[shape_uriref] = URIRef(row.resource)
+            defining_resource_to_named_graph[URIRef(row.resource)] = URIRef(f"{row.resource}/graph")
+        
         return (
             class_to_shape,
             shape_to_defining_resource,
