@@ -491,3 +491,45 @@ def build_ontology_query() -> str:
                 }
             }"""
     return query
+
+
+def build_shacl_query(context_document: dict) -> str:
+    """
+    Generates a SPARQL query using all prefixes found in a JSON-LD context document.
+
+    Args:
+        context_document (dict): JSON-LD context document containing prefix mappings.
+
+    Returns:
+        str: SPARQL query string with dynamically generated PREFIX declarations.
+    """
+    prefixes = {}
+
+    # Extract prefixes from context document
+    if isinstance(context_document["@context"], dict):
+        prefixes = context_document["@context"]
+    elif isinstance(context_document["@context"], list):
+        for entry in context_document["@context"]:
+            if isinstance(entry, dict):
+                prefixes.update(entry)
+
+    # Remove @vocab if present
+    prefixes.pop("@vocab", None)
+
+    # Build PREFIX declarations
+    prefix_statements = "\n".join(
+        f"PREFIX {prefix}: <{uri}>" for prefix, uri in prefixes.items() if isinstance(uri, str)
+    )
+
+    # SPARQL query template
+    query_template = f"""
+        {prefix_statements}
+        SELECT ?shape ?targetClass ?resource
+        WHERE {{
+            ?shape a sh:NodeShape ;
+                   sh:targetClass ?targetClass .
+            BIND(?shape AS ?resource)
+        }}
+    """
+
+    return query_template
