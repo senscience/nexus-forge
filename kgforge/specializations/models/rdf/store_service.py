@@ -14,8 +14,10 @@
 from typing import Dict, Optional, Union, List, Tuple
 
 import json
+import requests
+from urllib.parse import quote_plus
 
-from rdflib import URIRef, Namespace, Graph
+from rdflib import URIRef, Namespace, Graph, RDF, SH
 from rdflib import Dataset as RDFDataset
 
 from kgforge.core.commons.exceptions import RetrievalError
@@ -78,9 +80,11 @@ class StoreService(RdfService):
         return self._generate_context()
 
     def _build_shapes_map(self) -> Tuple[Dict, Dict, Dict]:
-        base_url = "endpoint/schemas/org/project"
-        response = requests.get(base_url)
+        base_url = f"{self.context_store.endpoint}/schemas/{self.context_store.bucket}"
+        schemas_url = f"{base_url}?deprecated=false"
+        response = requests.get(schemas_url)
         response.raise_for_status()
+        context_document = self.context.document
         shape_list = response.json()
 
         class_to_shape = {}
@@ -88,21 +92,35 @@ class StoreService(RdfService):
         defining_resource_to_named_graph = {}
         graph = Graph()
 
-        for shape_id in shape_list:
-            shape_url = f"{base_url}/{shape_id}"
+        for shape in shape_list["_results"]:
+            shape_id = shape["@id"]
+            shape_url = f"{base_url}/{quote_plus(shape_id)}"
             shape_response = requests.get(shape_url)
             shape_response.raise_for_status()
-            graph.parse(data=shape_response.text, format="turtle")
+            shape_data = shape_response.json()
+            shape_data["@context"] = context_document
+        
+            try:
+                graph.parse(data=str(shape_data), format="json-ld")
+            except Exception:
+                # Fallback: Convert JSON-LD manually into RDF triples
+                for shape in shape_data.get("shapes", []):
+                    shape_id = URIRef(shape["@id"])
+                    shape_type = shape["@type"]
+                    if shape_type == "NodeShape":
+                        shape_type = SH.NodeShape
+                    target_class = URIRef(self.context.expand(shape["targetClass"]))
 
-        query = """
-            PREFIX sh: <http://www.w3.org/ns/shacl#>
-            SELECT ?shape ?targetClass ?resource
-            WHERE {
-                ?shape a sh:NodeShape ;
-                       sh:targetClass ?targetClass .
-                BIND(?shape AS ?resource)
-            }
-        """
+                    # Add to graph
+                    graph.add((shape_id, URIRef(RDF.type), shape_type))
+                    graph.add((shape_id, URIRef(SH.targetClass), target_class))
+
+                    for prop in shape.get("property", []):
+                        path = URIRef(prop["path"])
+                        graph.add((shape_id, SH.property, path))
+
+        # graph.serialize(format="json-ld", destination="loaded_shapes.json")
+        query = build_shacl_query(context_document) 
         
         for row in graph.query(query):
             shape_uriref = URIRef(row.shape)
