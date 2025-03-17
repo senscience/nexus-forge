@@ -99,8 +99,8 @@ class StoreService(RdfService):
             shape_response.raise_for_status()
             shape_data = shape_response.json()
             shape_data["@context"] = context_document
-        
             try:
+
                 graph.parse(data=str(shape_data), format="json-ld")
             except Exception:
                 # Fallback: Convert JSON-LD manually into RDF triples
@@ -121,14 +121,14 @@ class StoreService(RdfService):
                         graph.add((inner_shape_id, SH.property, path))
 
         graph.serialize(format="json-ld", destination="loaded_shapes.json")
-        query = build_shacl_query(context_document) 
-        
+        query = build_shacl_query(context_document)
+
         for row in graph.query(query):
             shape_uriref = URIRef(row.shape)
             class_to_shape[URIRef(row.targetClass)] = shape_uriref
             shape_to_defining_resource[shape_uriref] = URIRef(row.resource)
             defining_resource_to_named_graph[URIRef(row.resource)] = URIRef(f"{row.resource}/graph")
-        
+
         return (
             class_to_shape,
             shape_to_defining_resource,
