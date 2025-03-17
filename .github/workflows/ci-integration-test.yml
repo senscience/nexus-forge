@@ -31,7 +31,7 @@ jobs:
           URL="http://localhost:8080/v1/version"
           curl --connect-timeout 3 --max-time 5 --retry 30 --retry-all-errors --retry-delay 3 --retry-max-time 130 $URL
           echo "Checking logs..."
-          docker compose --env-file tests/delta/.env.list.github -f tests/delta/docker-compose.yml logs
+          docker compose --env-file tests/delta/.env.hash.github -f tests/delta/docker-compose.yml logs
       - name: Install Python 3
         uses: actions/setup-python@v2
         with:
