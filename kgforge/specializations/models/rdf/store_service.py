@@ -105,21 +105,22 @@ class StoreService(RdfService):
             except Exception:
                 # Fallback: Convert JSON-LD manually into RDF triples
                 for shape in shape_data.get("shapes", []):
-                    shape_id = URIRef(shape["@id"])
+                    inner_shape_id = URIRef(self.context.expand(shape["@id"]))
                     shape_type = shape["@type"]
                     if shape_type == "NodeShape":
                         shape_type = SH.NodeShape
                     target_class = URIRef(self.context.expand(shape["targetClass"]))
 
                     # Add to graph
-                    graph.add((shape_id, URIRef(RDF.type), shape_type))
-                    graph.add((shape_id, URIRef(SH.targetClass), target_class))
+                    graph.add((URIRef(shape_id), self.NXV.shapes, URIRef(inner_shape_id)))
+                    graph.add((inner_shape_id, URIRef(RDF.type), shape_type))
+                    graph.add((inner_shape_id, URIRef(SH.targetClass), target_class))
 
                     for prop in shape.get("property", []):
                         path = URIRef(prop["path"])
-                        graph.add((shape_id, SH.property, path))
+                        graph.add((inner_shape_id, SH.property, path))
 
-        # graph.serialize(format="json-ld", destination="loaded_shapes.json")
+        graph.serialize(format="json-ld", destination="loaded_shapes.json")
         query = build_shacl_query(context_document) 
         
         for row in graph.query(query):

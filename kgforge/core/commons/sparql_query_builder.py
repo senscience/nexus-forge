@@ -493,7 +493,8 @@ def build_ontology_query() -> str:
     return query
 
 
-def build_shacl_query(context_document: dict) -> str:
+def build_shacl_query(context_document: dict,
+                      defining_property: str = "https://bluebrain.github.io/nexus/vocabulary/shapes") -> str:
     """
     Generates a SPARQL query using all prefixes found in a JSON-LD context document.
 
@@ -528,7 +529,9 @@ def build_shacl_query(context_document: dict) -> str:
         WHERE {{
             ?shape a sh:NodeShape ;
                    sh:targetClass ?targetClass .
-            BIND(?shape AS ?resource)
+
+            ?resource <{defining_property}> ?shape.
+
         }}
     """
 
