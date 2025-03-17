@@ -7,8 +7,6 @@ networks:
 services:
   delta:
     depends_on:
-      keycloak:
-        condition: service_started
       elasticsearch:
         condition: service_healthy
       blazegraph:
@@ -46,74 +44,6 @@ services:
     dns:
       # Set the DNS server to be the LocalStack container, for host resolution
       - 10.0.2.20
-
-  delta2:
-    depends_on:
-      - delta
-    environment:
-      - DELTA_PLUGINS
-      - DELTA_EXTERNAL_CONF
-      - KAMON_ENABLED
-      - PARTITION_STRATEGY
-      - _JAVA_OPTIONS
-    image: bluebrain/nexus-delta:latest
-    profiles:
-      - "cluster"
-    entrypoint:
-      - '/bin/bash'
-      - '-c'
-      - |
-        ln -sf /opt/docker/plugins/disabled/project-deletion.jar /opt/docker/plugins/project-deletion.jar &&
-        /opt/docker/bin/delta-app -Xmx4G -Dapp.projections.cluster.size=${CLUSTER_SIZE} -Dapp.projections.cluster.node-index=1 -Dapp.database.tables-autocreate=false
-    ports:
-      - 8081:8080
-    volumes:
-      - ./config:/config
-      - /tmp:/default-volume
-    dns:
-      # Set the DNS server to be the LocalStack container, for host resolution
-      - 10.0.2.20
-
-  delta3:
-    depends_on:
-      - delta2
-    environment:
-      - DELTA_PLUGINS
-      - DELTA_EXTERNAL_CONF
-      - KAMON_ENABLED
-      - PARTITION_STRATEGY
-      - _JAVA_OPTIONS
-    image: bluebrain/nexus-delta:1.12.0-M1
-    profiles:
-      - "cluster"
-    entrypoint:
-      - '/bin/bash'
-      - '-c'
-      - |
-        ln -sf /opt/docker/plugins/disabled/project-deletion.jar /opt/docker/plugins/project-deletion.jar &&
-        /opt/docker/bin/delta-app -Xmx4G -Dapp.projections.cluster.size=${CLUSTER_SIZE} -Dapp.projections.cluster.node-index=2 -Dapp.database.tables-autocreate=false
-    ports:
-      - 8082:8080
-    volumes:
-      - ./config:/config
-      - /tmp:/default-volume
-    dns:
-      # Set the DNS server to be the LocalStack container, for host resolution
-      - 10.0.2.20
-
-  keycloak:
-    image: quay.io/keycloak/keycloak:23.0.4
-    environment:
-      KEYCLOAK_ADMIN: "admin"
-      KEYCLOAK_ADMIN_PASSWORD: "admin"
-      DB_VENDOR: H2
-    command:
-      - start-dev
-      - --hostname=keycloak
-      - --hostname-port=8080
-      - --hostname-strict-backchannel=true
-    ports:
-      - 9090:8080
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.17.1
@@ -172,25 +102,3 @@ services:
       default:
         # Set the container IP address in the 10.0.2.0/24 subnet
         ipv4_address: 10.0.2.20
-
-  fusion:
-    depends_on:
-      - delta
-    image: bluebrain/nexus-web:2.0.0
-    environment:
-      BASE_PATH: "/"
-      HOST_NAME: "http://127.0.0.5"
-      API_ENDPOINT: "http://127.0.0.5/v1"
-
-  router:
-    depends_on:
-      - fusion
-    image: nginx:stable
-    ports:
-      - target: 8888
-        published: 8888
-        mode: host
-    deploy:
-      mode: global
-    volumes:
-      - ./config/nginx.conf:/etc/nginx/conf.d/default.conf
