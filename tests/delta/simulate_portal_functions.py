@@ -172,21 +172,20 @@ def main():
     schemas = load_schemas_from_directory(schemas_directory)
     create_schemas(organization_name, project_name, schemas)
 
-    time.sleep(10)
+    time.sleep(5)
     print("Start forge session")
     # Initialize a forge object
     config_path = os.path.join(data_path, "config/forge.yml")
     forge = KnowledgeGraphForge(config_path, endpoint=NEXUS_ENDPOINT,
-                            bucket=f"{organization_name}/{project_name}")
+                                bucket=f"{organization_name}/{project_name}")
     print("Forge initialized")
     # check that context was correctly resolved, and shapes were loaded
     dtypes = forge._model.types(pretty=False)
-    print("dtypes", dtypes)
     assert len(dtypes) > 0
 
     # data
     resources_path = os.path.join(data_path, "resources")
-    resources = create_resources_from_files(organization_name, project_name, resources_path)
+    resources = create_resources_from_files(forge, resources_path)
     forge.register(resources)
 
     for resource in resources:

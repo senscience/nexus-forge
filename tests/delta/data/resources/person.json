@@ -3,5 +3,7 @@
     "@id": "https://example.org/person1",
     "@type": "https://schema.org/Person",
     "https://schema.org/name": "John Doe",
-    "https://schema.org/affiliation": "https://example.org/organization1"
+    "https://schema.org/affiliation": {
+        "@id": "https://example.org/organization1"
+    }
 }

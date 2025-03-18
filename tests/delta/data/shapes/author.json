@@ -17,7 +17,8 @@
                     "nodeKind": "sh:IRI"
                 },
                 {
-                    "path": "https://schema.org/name"
+                    "path": "https://schema.org/name",
+                    "minCount": 1
                 }
             ],
             "targetClass": "https://schema.org/Person"
@@ -27,7 +28,8 @@
             "@type": "NodeShape",
             "property": [
                 {
-                    "path": "https://schema.org/name"
+                    "path": "https://schema.org/name",
+                    "minCount": 1
                 }
             ],
             "targetClass": "https://schema.org/Organization"
