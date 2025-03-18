@@ -38,8 +38,9 @@ jobs:
         run: | 
           echo "Running basic test..."
           python tests/delta/create_random.py
+          echo " ====== Successfully created random data."
           echo "Running platform tests..."
-          python tests/delta/simulate_format_functions.py
+          python tests/delta/simulate_portal_functions.py
       - name: Stop & clean Docker
         if: ${{ always() }}
         run: |
