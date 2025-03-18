@@ -47,16 +47,12 @@ class NexusAPI:
             requests.exceptions.RequestException: If an error occurs during the HTTP request.
         """
         url = f"{self.base_url}/{path}"
-        try:
-            response = requests.request(method, url, headers=self.headers, json=data)
-            response.raise_for_status()
-            if keep_raw:
-                return response
-            else:
-                return self._decode_json_ordered(response.text)
-
-        except requests.exceptions.RequestException:
-            return {"error": response.text}
+        response = requests.request(method, url, headers=self.headers, json=data)
+        response.raise_for_status()
+        if keep_raw:
+            return response
+        else:
+            return self._decode_json_ordered(response.text)
 
     def create(
         self, object_type: str, data: Dict[str, Any] = None, path: str = None
@@ -166,14 +162,14 @@ def main():
     context_content = load_from_file(context_filepath)
     sense_context = load_from_file(sense_context_filepath)
 
+    create_resource(organization_name, project_name, context_content)
+    create_resource(organization_name, project_name, sense_context)
+
     # schemas
 
     schemas_directory = os.path.join(data_path, "shapes")
     schemas = load_schemas_from_directory(schemas_directory)
     create_schemas(organization_name, project_name, schemas)
-
-    create_resource(organization_name, project_name, context_content)
-    create_resource(organization_name, project_name, sense_context)
 
     # Initialize a forge object
     config_path = os.path.join(data_path, "config/forge.yml")
