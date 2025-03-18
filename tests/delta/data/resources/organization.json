@@ -1,0 +1,12 @@
+{
+    "@context": [
+        "http://senscience.ai/context.json",
+        {
+            "dv": "http://senscience.ai/",
+            "cr": "http://mlcommons.org/croissant/"
+        }
+    ],
+    "@id": "https://example.org/organization1",
+    "@type": "https://schema.org/Organization",
+    "https://schema.org/name": "Example Organization"
+}

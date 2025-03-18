@@ -1,0 +1,13 @@
+{
+    "@context": [
+        "http://senscience.ai/context.json",
+        {
+            "dv": "http://senscience.ai/",
+            "cr": "http://mlcommons.org/croissant/"
+        }
+    ],
+    "@id": "https://example.org/person1",
+    "@type": "https://schema.org/Person",
+    "https://schema.org/name": "John Doe",
+    "https://schema.org/affiliation": "https://example.org/organization1"
+}
