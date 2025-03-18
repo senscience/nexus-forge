@@ -116,7 +116,7 @@ def create_resource(organization_name, project_name, resource_content):
 
 def create_schemas(organization_name, project_name, shapes):
     for shape_name, shape_content in shapes.items():
-        response = nexus_api.create("schemas", shape_content, path=f"{organization_name}/{project_name}/{shape_name}")
+        response = nexus_api.create("schemas", shape_content, path=f"{organization_name}/{project_name}")
         if "error" in response:
             raise Exception(response["error"])
         print(f"Schema '{shape_name}' created successfully in project '{organization_name}/{project_name}'.")
