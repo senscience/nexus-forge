@@ -1,0 +1,6 @@
+{
+    "@context": "http://senscience.ai/context.json",
+    "@id": "https://example.org/organization1",
+    "@type": "https://schema.org/Organization",
+    "https://schema.org/name": "Example Organization"
+}

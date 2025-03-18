@@ -1,0 +1,17 @@
+{
+    "@context": "http://senscience.ai/context.json",
+    "@id": "https://example.org/submission1",
+    "@type": "dv:Submission",
+    "https://schema.org/isBasedOn": [
+        {
+            "@id": "https://example.org/dataset1",
+            "@type": "https://schema.org/Dataset",
+            "https://schema.org/distribution": "https://example.org/distribution1",
+            "cr:recordSet": "https://example.org/recordSet1"
+        },
+        {
+            "@id": "https://example.org/article1",
+            "@type": "https://schema.org/ScholarlyArticle"
+        }
+    ]
+}

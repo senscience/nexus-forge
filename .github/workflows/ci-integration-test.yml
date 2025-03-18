@@ -1,0 +1,45 @@
+name: Delta Integration Tests - List partitioning
+on:
+  pull_request:
+    paths:
+        - 'kgforge/**'
+        - '.github/workflows/ci-integration-test.yml'
+  push:
+    branches:
+      - master
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Start services
+        run: |
+          docker compose --env-file tests/delta/.env.hash.github -f tests/delta/docker-compose.yml up -d
+          sleep 5  # Give some time to start
+          echo "Checking running containers..."
+          docker ps -a
+      - name: Waiting for Delta to start
+        run: |
+          URL="http://localhost:8080/v1/version"
+          curl --connect-timeout 3 --max-time 5 --retry 30 --retry-all-errors --retry-delay 3 --retry-max-time 90 $URL
+      - name: Install Python 3
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Install nexus-forge development
+        run: pip install .[dev]
+      - name: Test
+        run: | 
+          echo " === Running platform tests..."
+          python tests/delta/simulate_portal_functions.py
+      - name: Stop & clean Docker
+        if: ${{ always() }}
+        run: |
+          docker compose -f tests/delta/docker-compose.yml down --rmi "local" --volumes
+          docker system prune --force --volumes
