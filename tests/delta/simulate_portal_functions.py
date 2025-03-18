@@ -168,7 +168,7 @@ def main():
 
     # schemas
 
-    schemas_directory = os.path.join(data_path, "schemas")
+    schemas_directory = os.path.join(data_path, "shapes")
     schemas = load_schemas_from_directory(schemas_directory)
     create_schemas(organization_name, project_name, schemas)
 
