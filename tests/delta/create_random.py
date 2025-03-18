@@ -1,8 +1,8 @@
 import requests
-
+import uuid
 
 # Define the URL
-url = f"http://localhost:8080/v1/orgs"
+url = f"http://localhost:8080/v1/orgs/random_{uuid.uuid4()}"
 
 # Define the headers
 
