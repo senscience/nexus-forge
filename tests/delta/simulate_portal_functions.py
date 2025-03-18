@@ -6,7 +6,7 @@ import collections
 from typing import Dict, Any, Union
 from kgforge.core import KnowledgeGraphForge
 
-NEXUS_ENDPOINT = os.getenv("NEXUS_ENDPOINT")
+NEXUS_ENDPOINT = "http://localhost:8080/v1"  # Make sure to set your Nexus endpoint in the environment variables
 
 
 class NexusAPI:
