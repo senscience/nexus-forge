@@ -1,11 +1,5 @@
 {
-    "@context": [
-        "http://senscience.ai/context.json",
-        {
-            "dv": "http://senscience.ai/",
-            "cr": "http://mlcommons.org/croissant/"
-        }
-    ],
+    "@context": "http://senscience.ai/context.json",
     "@id": "https://example.org/submission1",
     "@type": "dv:Submission",
     "https://schema.org/isBasedOn": [
