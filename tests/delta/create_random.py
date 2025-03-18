@@ -1,15 +1,15 @@
 import requests
-import uuid
 
-# Generate a random UUID
-uid = str(uuid.uuid4())
 
 # Define the URL
-url = f"http://localhost:8080/v1/{uid}"
+url = f"http://localhost:8080/v1/orgs"
 
 # Define the headers
+
 headers = {
-    "Content-Type": "application/json"
+            "mode": "cors",
+            "Content-Type": "application/json",
+            "Accept": "application/ld+json, application/json",
 }
 
 # Define the data
