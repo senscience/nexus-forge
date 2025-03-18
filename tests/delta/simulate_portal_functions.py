@@ -5,6 +5,7 @@ import collections
 
 from typing import Dict, Any, Union
 from kgforge.core import KnowledgeGraphForge
+import time
 
 NEXUS_ENDPOINT = "http://localhost:8080/v1"  # Make sure to set your Nexus endpoint in the environment variables
 
@@ -171,13 +172,16 @@ def main():
     schemas = load_schemas_from_directory(schemas_directory)
     create_schemas(organization_name, project_name, schemas)
 
+    time.sleep(10)
+    print("Start forge session")
     # Initialize a forge object
     config_path = os.path.join(data_path, "config/forge.yml")
     forge = KnowledgeGraphForge(config_path, endpoint=NEXUS_ENDPOINT,
                             bucket=f"{organization_name}/{project_name}")
-
+    print("Forge initialized")
     # check that context was correctly resolved, and shapes were loaded
     dtypes = forge._model.types(pretty=False)
+    print("dtypes", dtypes)
     assert len(dtypes) > 0
 
     # data
