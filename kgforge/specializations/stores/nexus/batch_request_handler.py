@@ -43,7 +43,11 @@ class BatchRequestHandler:
             **kwargs
     ):
 
-        loop = asyncio.get_event_loop()
+        try:
+            loop = asyncio.get_running_loop()  # Get the running event loop if available
+        except RuntimeError:
+            loop = asyncio.new_event_loop()  # Create a new event loop if none exists
+            asyncio.set_event_loop(loop)  # Set it as the current loop
 
         async def dispatch_action():
             semaphore = asyncio.Semaphore(service.max_connection)
