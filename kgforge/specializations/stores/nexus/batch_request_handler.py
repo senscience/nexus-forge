@@ -61,14 +61,11 @@ class BatchRequestHandler:
             for sess in sesss:
                 await sess.close()
 
-        # Handle both async and sync environments correctly
-        if is_async_environment:
-            res, sessions = await dispatch_action()
-            closing_task = asyncio.create_task(close_sessions(sessions))
-            await closing_task
-        else:
-            res, sessions = loop.run_until_complete(dispatch_action())
-            loop.run_until_complete(close_sessions(sessions))
+
+        # Run both dispatch and session cleanup synchronously
+        res, sessions = loop.run_until_complete(dispatch_action())
+        loop.run_until_complete(close_sessions(sessions))
+        loop.close()
 
         return res 
 
