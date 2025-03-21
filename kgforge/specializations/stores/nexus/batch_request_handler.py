@@ -59,13 +59,12 @@ class BatchRequestHandler:
             for sess in sesss:
                 await sess.close()
 
-
         # Run both dispatch and session cleanup synchronously
         res, sessions = loop.run_until_complete(dispatch_action())
         loop.run_until_complete(close_sessions(sessions))
         loop.close()
 
-        return res 
+        return res
 
     @staticmethod
     def batch_request_on_resources(
