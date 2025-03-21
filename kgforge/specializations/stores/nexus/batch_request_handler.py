@@ -44,27 +44,26 @@ class BatchRequestHandler:
     ):
 
         try:
-            loop = asyncio.get_running_loop()  # Get the running event loop if available
+            loop = asyncio.get_running_loop()  # Try getting the current running loop
         except RuntimeError:
-            loop = asyncio.new_event_loop()  # Create a new event loop if none exists
-            asyncio.set_event_loop(loop)  # Set it as the current loop
+            loop = asyncio.new_event_loop()  # Create a new event loop if not running
+            asyncio.set_event_loop(loop)
 
         async def dispatch_action():
             semaphore = asyncio.Semaphore(service.max_connection)
 
-            tasks, sessions = await task_creator(
-                semaphore, loop, data, service, **kwargs
-            )
-
+            tasks, sessions = await task_creator(semaphore, loop, data, service, **kwargs)
             return await asyncio.gather(*tasks), sessions
 
         async def close_sessions(sesss):
             for sess in sesss:
                 await sess.close()
 
-        res, sessions = asyncio.run(dispatch_action())
-        closing_task = loop.create_task(close_sessions(sessions))
-        asyncio.run(closing_task)
+        # Run both dispatch and session cleanup synchronously
+        res, sessions = loop.run_until_complete(dispatch_action())
+        loop.run_until_complete(close_sessions(sessions))
+        loop.close()
+
         return res
 
     @staticmethod
