@@ -45,11 +45,9 @@ class BatchRequestHandler:
 
         try:
             loop = asyncio.get_running_loop()  # Try getting the current running loop
-            is_async_environment = True
         except RuntimeError:
             loop = asyncio.new_event_loop()  # Create a new event loop if not running
             asyncio.set_event_loop(loop)
-            is_async_environment = False
 
         async def dispatch_action():
             semaphore = asyncio.Semaphore(service.max_connection)
