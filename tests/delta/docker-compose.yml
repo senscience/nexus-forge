@@ -21,7 +21,7 @@ services:
       - KAMON_ENABLED
       - PARTITION_STRATEGY
       - _JAVA_OPTIONS
-    image: bluebrain/nexus-delta:1.12.0-M2
+    image: ghcr.io/senscience/nexus-delta:1.12.0-M3 
     entrypoint:
       - '/bin/bash'
       - '-c'
