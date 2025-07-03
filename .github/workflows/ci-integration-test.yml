@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
         - 'kgforge/**'
+        - 'tests/**'
         - '.github/workflows/ci-integration-test.yml'
   push:
     branches:
