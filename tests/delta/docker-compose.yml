@@ -21,7 +21,7 @@ services:
       - KAMON_ENABLED
       - PARTITION_STRATEGY
       - _JAVA_OPTIONS
-    image: ghcr.io/senscience/nexus-delta:1.12.0-M3 
+    image: ghcr.io/senscience/nexus-delta:1.12.0-M8
     entrypoint:
       - '/bin/bash'
       - '-c'
@@ -46,7 +46,7 @@ services:
       - 10.0.2.20
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.17.1
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.1.6
     environment:
       ES_JAVA_OPTS: "-Xmx2G"
       discovery.type: "single-node"
@@ -83,7 +83,7 @@ services:
       - ./config:/config
 
   postgres:
-    image: library/postgres:17.4
+    image: library/postgres:17.6
     ports:
       - 5433:5433
     environment:
@@ -91,7 +91,7 @@ services:
       POSTGRES_PASSWORD: "postgres"
 
   localstack:
-    image: localstack/localstack:4.1
+    image: localstack/localstack:4.9.2
     environment:
       AWS_ACCESS_KEY_ID: "MY_ACCESS_KEY"
       AWS_SECRET_ACCESS_KEY: "CHUTCHUT"
