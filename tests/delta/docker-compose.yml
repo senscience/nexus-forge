@@ -19,7 +19,7 @@ services:
       - DELTA_PLUGINS
       - DELTA_EXTERNAL_CONF
       - PARTITION_STRATEGY
-    image: ghcr.io/senscience/nexus-delta:1.12.0-M8
+    image: ghcr.io/senscience/nexus-delta:1.12.0-M9
     entrypoint:
       - '/bin/bash'
       - '-c'
@@ -44,7 +44,7 @@ services:
       - 10.0.2.20
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:9.1.6
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.2.1
     environment:
       ES_JAVA_OPTS: "-Xmx2G"
       discovery.type: "single-node"
@@ -79,7 +79,7 @@ services:
       - ./config:/config
 
   postgres:
-    image: library/postgres:17.6
+    image: library/postgres:18.1
     ports:
       - 5433:5433
     environment:
@@ -87,7 +87,7 @@ services:
       POSTGRES_PASSWORD: "postgres"
 
   localstack:
-    image: localstack/localstack:4.9.2
+    image: localstack/localstack:4.12.0
     environment:
       AWS_ACCESS_KEY_ID: "MY_ACCESS_KEY"
       AWS_SECRET_ACCESS_KEY: "CHUTCHUT"
